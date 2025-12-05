@@ -9,7 +9,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
   console.error(
     `Environment variable "OPENAI_API_KEY" is required.\n` +
-      `Please set it in your .env file.`
+    `Please set it in your .env file.`
   );
   process.exit(1);
 }
@@ -18,6 +18,7 @@ const PORT = 3000;
 const wss = new WebSocketServer({ port: PORT });
 
 wss.on("connection", async (ws, req) => {
+
   if (!req.url) {
     console.log("No URL provided, closing connection.");
     ws.close();
@@ -33,11 +34,16 @@ wss.on("connection", async (ws, req) => {
     return;
   }
 
-  const client = new RealtimeClient({ apiKey: OPENAI_API_KEY });
+  const client = new RealtimeClient({
+    url: "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview",
+    apiKey: OPENAI_API_KEY,
+    // debug: true
+  });
 
   // Relay: OpenAI Realtime API Event -> Browser Event
   client.realtime.on("server.*", (event) => {
     console.log(`Relaying "${event.type}" to Client`);
+    console.log("🔊 Event:", JSON.stringify(event));
     ws.send(JSON.stringify(event));
   });
   client.realtime.on("close", () => ws.close());
