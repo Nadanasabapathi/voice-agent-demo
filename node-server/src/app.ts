@@ -48,7 +48,7 @@ wss.on("connection", async (ws, req) => {
         await session.connect({ apiKey: OPENAI_API_KEY });
         console.log(`Connected to OpenAI successfully!`);
     } catch (e) {
-        console.log(`Error connecting to OpenAI: ${e.message}`);
+        console.log(`Error connecting to OpenAI: ${e instanceof Error ? e.message : String(e)}`);
         ws.close();
         return;
     }
@@ -58,7 +58,7 @@ wss.on("connection", async (ws, req) => {
         if (data instanceof Buffer || data instanceof ArrayBuffer) {
             // Convert Buffer to ArrayBuffer if needed
             const audioData = data instanceof Buffer ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength) : data;
-            session.sendAudio(audioData);
+            session.sendAudio(audioData as ArrayBuffer);
         }
     });
 
@@ -82,4 +82,4 @@ wss.on("connection", async (ws, req) => {
     });
 });
 
-console.log(`Websocket server listening on port ${PORT}`);
+console.log(`Websocket server listening on ports ${PORT}`);
