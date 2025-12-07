@@ -24,8 +24,6 @@ wss.on("connection", async (ws, req) => {
         return;
     }
 
-    console.log("Connection request", req);
-
     const url = new URL(req.url, `https://${req.headers.host}`);
     const pathname = url.pathname;
 
@@ -35,11 +33,33 @@ wss.on("connection", async (ws, req) => {
         return;
     }
 
+    const meetingId = url.searchParams.get("meeting_id");
+    if (!meetingId) {
+        console.log("No meeting ID provided, closing connection.");
+        ws.close();
+        return;
+    }
+
+    const data = await fetch(`https://voice-agent-demo-eta.vercel.app/api/meetings/${meetingId}/instructions`)
+        .then(res => res.json())
+        .catch(err => {
+            console.log("Error fetching instructions:", err);
+            ws.close();
+            return;
+        });
+
+    console.log("Instructions:", data.instructions);
+    if (!data.instructions) {
+        console.log("No instructions provided, closing connection.");
+        ws.close();
+        return;
+    }
+
     console.log("Browser connected");
 
     const agent = new RealtimeAgent({
         name: "Atlas",
-        instructions: "You are a helpful assistant that can answer questions and help with tasks.",
+        instructions: data.instructions,
     });
 
     // Configure turn detection for interruption support
