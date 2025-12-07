@@ -40,7 +40,7 @@ wss.on("connection", async (ws, req) => {
         return;
     }
 
-    const data = await fetch(`https://voice-agent-demo-eta.vercel.app/api/meetings/${meetingId}/instructions`)
+    const data = await fetch(`https://jarvis-eight-tan.vercel.app/api/meetings/${meetingId}/instructions`)
         .then(res => res.json())
         .catch(err => {
             console.log("Error fetching instructions:", err);
