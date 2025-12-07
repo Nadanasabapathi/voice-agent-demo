@@ -14,7 +14,7 @@ if (!OPENAI_API_KEY) {
     process.exit(1);
 }
 
-const PORT = 3000;
+const PORT = 3001;
 const wss = new WebSocketServer({ port: PORT });
 
 wss.on("connection", async (ws, req) => {
@@ -23,6 +23,8 @@ wss.on("connection", async (ws, req) => {
         ws.close();
         return;
     }
+
+    console.log("Connection request", req);
 
     const url = new URL(req.url, `https://${req.headers.host}`);
     const pathname = url.pathname;
@@ -36,17 +38,32 @@ wss.on("connection", async (ws, req) => {
     console.log("Browser connected");
 
     const agent = new RealtimeAgent({
-        name: "My Agent",
-        instructions: "You are a helpful assistant.",
+        name: "Atlas",
+        instructions: "You are a helpful assistant that can answer questions and help with tasks.",
     });
 
-    const session = new RealtimeSession(agent);
+    // Configure turn detection for interruption support
+    const session = new RealtimeSession(agent, {
+        config: {
+            audio: {
+                input: {
+                    turnDetection: {
+                        type: "server_vad",
+                        interrupt_response: true,
+                        threshold: 0.5,
+                        prefixPaddingMs: 500,
+                        silenceDurationMs: 500
+                    }
+                }
+            }
+        }
+    });
 
     // Connect to OpenAI Realtime API
     try {
         console.log(`Connecting to OpenAI...`);
         await session.connect({ apiKey: OPENAI_API_KEY });
-        console.log(`Connected to OpenAI successfully!`);
+        console.log(`Connected to OpenAI with turn detection enabled`);
     } catch (e) {
         console.log(`Error connecting to OpenAI: ${e instanceof Error ? e.message : String(e)}`);
         ws.close();
@@ -82,4 +99,4 @@ wss.on("connection", async (ws, req) => {
     });
 });
 
-console.log(`Websocket server listening on ports ${PORT}`);
+console.log(`Websocket server listening on port ${PORT}`);

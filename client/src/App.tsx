@@ -9,7 +9,8 @@ const wavStreamPlayerRef = { current: null as WavStreamPlayer | null };
 
 export function App() {
   const params = new URLSearchParams(window.location.search);
-  const RELAY_SERVER_URL = params.get("wss") || "wss://shon-unresearched-venerably.ngrok-free.dev/";
+  const RELAY_SERVER_URL = params.get("wss");
+  const instructions = params.get("instructions") || "";
   const [connectionStatus, setConnectionStatus] = useState<
     "disconnected" | "connecting" | "connected"
   >("disconnected");
@@ -40,7 +41,11 @@ export function App() {
       console.log("🔊 Audio output connected");
 
       // Connect to backend WebSocket server
-      const ws = new WebSocket(RELAY_SERVER_URL);
+      const params = new URLSearchParams({
+        instructions: instructions
+      });
+      const ws = new WebSocket(`${RELAY_SERVER_URL}?${params.toString()}`);
+
       ws.binaryType = "arraybuffer"; // Receive binary data as ArrayBuffer
       wsRef.current = ws;
 
