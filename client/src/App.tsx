@@ -10,7 +10,7 @@ const wavStreamPlayerRef = { current: null as WavStreamPlayer | null };
 export function App() {
   const params = new URLSearchParams(window.location.search);
   const RELAY_SERVER_URL = params.get("wss");
-  const instructions = params.get("instructions") || "";
+  const MEETING_ID = params.get("meeting_id") || "";
   const [connectionStatus, setConnectionStatus] = useState<
     "disconnected" | "connecting" | "connected"
   >("disconnected");
@@ -42,7 +42,7 @@ export function App() {
 
       // Connect to backend WebSocket server
       const params = new URLSearchParams({
-        instructions: instructions
+        meeting_id: MEETING_ID
       });
       const ws = new WebSocket(`${RELAY_SERVER_URL}?${params.toString()}`);
 
